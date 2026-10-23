@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misi Jurnalis SMP: Struktur Teks Berita (3D Interactive)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --font-display: 'Fredoka', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --ui-scale: 1;
+        }
+
+        body {
+            font-family: var(--font-body);
+            /* Latar belakang 3D Royal Blue Studio seperti Slide Presentasi */
+            background:
+                radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.35) 0%, transparent 38%),
+                radial-gradient(circle at 88% 15%, rgba(37, 99, 235, 0.32) 0%, transparent 42%),
+                radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.28) 0%, transparent 45%),
+                linear-gradient(145deg, #dbeafe 0%, #eff6ff 45%, #e0f2fe 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Pola Titik Halus ala Studio Game Edukasi */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(37, 99, 235, 0.11) 1.5px, transparent 1.5px);
+            background-size: 26px 26px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .font-display {
+            font-family: var(--font-display);
+            letter-spacing: 0.01em;
+        }
+
+        /* Mode Papan Interaktif Digital (Smartboard Zoom) */
+        body.smartboard-mode {
+            font-size: 112%;
+        }
+        body.smartboard-mode .snippet-text {
+            font-size: 1.08rem !important;
+            line-height: 1.65 !important;
+        }
+
+        /* =========================================================
+           3D GLOSSY SPHERES (Persis Ornamen Bola 3D di Slide PPT)
+           ========================================================= */
+        .sphere-blue {
+            background: radial-gradient(circle at 30% 25%, #bfdbfe 0%, #60a5fa 22%, #2563eb 58%, #1e3a8a 100%);
+            box-shadow: 0 12px 24px -4px rgba(30, 58, 138, 0.55), inset 0 4px 8px rgba(255, 255, 255, 0.85), inset 0 -6px 12px rgba(15, 23, 42, 0.4);
+        }
+        .sphere-cyan {
+            background: radial-gradient(circle at 30% 25%, #cffafe 0%, #22d3ee 25%, #0891b2 62%, #164e63 100%);
+            box-shadow: 0 12px 24px -4px rgba(8, 145, 178, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.85), inset 0 -6px 12px rgba(15, 23, 42, 0.35);
+        }
+        .sphere-amber {
+            background: radial-gradient(circle at 30% 25%, #fef9c3 0%, #facc15 25%, #f59e0b 62%, #92400e 100%);
+            box-shadow: 0 12px 24px -4px rgba(180, 83, 9, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.9), inset 0 -6px 12px rgba(120, 53, 15, 0.4);
+        }
+        .sphere-green {
+            background: radial-gradient(circle at 30% 25%, #d1fae5 0%, #34d399 25%, #059669 65%, #064e3b 100%);
+            box-shadow: 0 12px 24px -4px rgba(5, 150, 105, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.85), inset 0 -6px 12px rgba(6, 78, 59, 0.4);
+        }
+        .sphere-pink {
+            background: radial-gradient(circle at 30% 25%, #ffe4e6 0%, #fb7185 25%, #e11d48 65%, #881337 100%);
+            box-shadow: 0 12px 24px -4px rgba(225, 29, 72, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.85), inset 0 -6px 12px rgba(136, 19, 55, 0.4);
+        }
+        .sphere-purple {
+            background: radial-gradient(circle at 30% 25%, #f3e8ff 0%, #c084fc 25%, #7e22ce 65%, #3b0764 100%);
+            box-shadow: 0 12px 24px -4px rgba(126, 34, 206, 0.5), inset 0 4px 8px rgba(255, 255, 255, 0.85), inset 0 -6px 12px rgba(59, 7, 100, 0.4);
+        }
+
+        /* =========================================================
+           3D TACTILE PILL BANNERS & GAME BUTTONS
+           ========================================================= */
+        .pill-3d-banner {
+            background: linear-gradient(180deg, #fde047 0%, #f59e0b 65%, #d97706 100%);
+            box-shadow: 0 7px 0 #92400e, 0 14px 24px rgba(146, 64, 14, 0.28), inset 0 3px 5px rgba(255, 255, 255, 0.85);
+            border: 2px solid #fef08a;
+        }
+
+        .btn-3d-blue {
+            background: linear-gradient(180deg, #60a5fa 0%, #2563eb 55%, #1d4ed8 100%);
+            box-shadow: 0 7px 0 #1e3a8a, 0 14px 24px rgba(30, 58, 138, 0.35), inset 0 3px 5px rgba(255, 255, 255, 0.7);
+            border: 2px solid #93c5fd;
+            transition: all 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-3d-blue:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 9px 0 #1e3a8a, 0 18px 28px rgba(30, 58, 138, 0.42), inset 0 3px 6px rgba(255, 255, 255, 0.85);
+            filter: brightness(1.05);
+        }
+        .btn-3d-blue:active:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #1e3a8a, 0 5px 10px rgba(30, 58, 138, 0.25);
+        }
+
+        .btn-3d-amber {
+            background: linear-gradient(180deg, #fde047 0%, #f59e0b 55%, #d97706 100%);
+            box-shadow: 0 7px 0 #92400e, 0 14px 24px rgba(146, 64, 14, 0.32), inset 0 3px 5px rgba(255, 255, 255, 0.8);
+            border: 2px solid #fef08a;
+            transition: all 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-3d-amber:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 9px 0 #92400e, 0 18px 28px rgba(146, 64, 14, 0.4), inset 0 3px 6px rgba(255, 255, 255, 0.9);
+        }
+        .btn-3d-amber:active:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #92400e, 0 5px 10px rgba(146, 64, 14, 0.25);
+        }
+
+        .btn-3d-white {
+            background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+            box-shadow: 0 5px 0 #93c5fd, 0 10px 18px rgba(30, 64, 175, 0.12), inset 0 2px 3px #ffffff;
+            border: 2px solid #bfdbfe;
+            transition: all 0.14s ease;
+        }
+        .btn-3d-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #60a5fa, 0 12px 22px rgba(30, 64, 175, 0.18);
+            border-color: #60a5fa;
+        }
+        .btn-3d-white:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #60a5fa;
+        }
+
+        /* =========================================================
+           3D NEWS SNIPPET CARDS & TARGET DROP SLOTS
+           ========================================================= */
+        .news-snippet-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+            box-shadow: 0 7px 0 #93c5fd, 0 12px 24px rgba(30, 64, 175, 0.14), inset 0 2px 4px #ffffff;
+            border: 2.5px solid #93c5fd;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: grab;
+        }
+        .news-snippet-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 11px 0 #3b82f6, 0 18px 30px rgba(37, 99, 235, 0.22);
+            border-color: #3b82f6;
+        }
+        .news-snippet-card:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+        .news-snippet-card.selected-card {
+            background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #f59e0b;
+            box-shadow: 0 8px 0 #d97706, 0 0 0 5px rgba(245, 158, 11, 0.35), 0 16px 30px rgba(180, 83, 9, 0.22);
+            transform: translateY(-4px) scale(1.01);
+        }
+        .news-snippet-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        /* Kartu Struktur Materi 3D */
+        .material-card-3d {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 7px 0 #cbd5e1, 0 12px 20px rgba(15, 23, 42, 0.08);
+            border: 2.5px solid #bfdbfe;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .material-card-3d:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #60a5fa, 0 16px 28px rgba(37, 99, 235, 0.16);
+            border-color: #3b82f6;
+        }
+        .material-card-3d.active-mat {
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #2563eb;
+            box-shadow: 0 8px 0 #1d4ed8, 0 16px 30px rgba(37, 99, 235, 0.24);
+            transform: translateY(-4px);
+        }
+
+        /* Zona Drop Target 3D */
+        .drop-slot-3d {
+            transition: all 0.2s ease;
+            background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+            border: 2.5px dashed #60a5fa;
+            box-shadow: inset 0 3px 8px rgba(37, 99, 235, 0.08), 0 4px 0 #bfdbfe;
+        }
+        .drop-slot-3d.filled-slot {
+            border-style: solid;
+            border-color: #60a5fa;
+            background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+            box-shadow: 0 6px 0 #93c5fd, 0 10px 20px rgba(30, 64, 175, 0.1);
+        }
+        .drop-slot-3d.drag-over {
+            background: #dbeafe;
+            border-style: solid;
+            border-color: #1d4ed8;
+            transform: scale(1.015);
+            box-shadow: 0 8px 0 #1d4ed8, 0 0 0 6px rgba(59, 130, 246, 0.25);
+        }
+        .drop-slot-3d.ready-to-place {
+            border-color: #f59e0b;
+            border-style: dashed;
+            background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+            animation: pulseSlot 1.4s infinite;
+        }
+
+        @keyframes pulseSlot {
+            0%, 100% { box-shadow: 0 5px 0 #f59e0b, 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 5px 0 #f59e0b, 0 0 0 8px rgba(245, 158, 11, 0); }
+        }
+
+        /* Animasi Mengambang Halus */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+
+        /* Kanvas Utama 3D Glassmorphism */
+        .main-stage-3d {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 14px 0 #93c5fd,
+                0 30px 65px -12px rgba(30, 58, 138, 0.28),
+                inset 0 3px 6px rgba(255, 255, 255, 0.95);
+            border: 3px solid #bfdbfe;
+        }
+
+        /* Piramida Terbalik 3D */
+        .pyramid-layer {
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .pyramid-layer:hover {
+            transform: scale(1.03) translateY(-2px);
+            filter: brightness(1.07);
+        }
+        .pyramid-layer.active-pyr {
+            transform: scale(1.05) translateY(-3px);
+            z-index: 10;
+            filter: brightness(1.1) drop-shadow(0 10px 14px rgba(30, 58, 138, 0.35));
+        }
+        .pyr-clip-1 {
+            clip-path: polygon(2% 0, 98% 0, 89% 100%, 11% 100%);
+        }
+        .pyr-clip-2 {
+            clip-path: polygon(12% 0, 88% 0, 75% 100%, 25% 100%);
+        }
+        .pyr-clip-3 {
+            clip-path: polygon(26% 0, 74% 0, 58% 100%, 42% 100%);
+        }
+
+        /* Highlight Kata Kunci ADIK SIMBA */
+        .kw-pill {
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start sm:justify-center p-2.5 sm:p-5 min-h-screen relative text-slate-800 pb-24 sm:pb-8">
+
+    <!-- Ornamen Bola 3D Latar Belakang (Persis Slide Presentasi) -->
+    <div class="fixed -top-12 -left-12 w-44 h-44 rounded-full sphere-blue opacity-35 pointer-events-none animate-float"></div>
+    <div class="fixed top-1/3 -right-16 w-52 h-52 rounded-full sphere-cyan opacity-25 pointer-events-none"></div>
+    <div class="fixed -bottom-16 left-1/4 w-44 h-44 rounded-full sphere-amber opacity-25 pointer-events-none"></div>
+
+    <!-- =================================================================
+         FLOATING ACTION BAR KHUSUS HP / TABLET SAAT KARTU DIPILIH
+         ================================================================= -->
+    <div id="mobileQuickAssignBar" class="fixed bottom-3 inset-x-3 z-50 hidden bg-slate-900/95 backdrop-blur-md text-white p-3.5 rounded-3xl shadow-2xl border-2 border-amber-400 transition-all">
+        <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full sphere-amber text-slate-950 font-display font-bold text-xs flex items-center justify-center shrink-0">
+                    <i class="ph-bold ph-hand-tap"></i>
+                </span>
+                <p class="text-xs font-bold text-amber-200 truncate max-w-[230px] sm:max-w-md" id="mobileSelectedPreview">
+                    Potongan berita terpilih...
+                </p>
+            </div>
+            <button onclick="clearSelectedSnippet()" class="text-xs font-bold text-slate-300 hover:text-white px-2 py-0.5 rounded-lg bg-white/10">
+                Batal
+            </button>
+        </div>
+        <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="quickAssignSelected(0)" class="py-2 px-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-bold text-xs shadow flex flex-col items-center">
+                <span>01</span>
+                <span class="text-[10px]">Judul</span>
+            </button>
+            <button onclick="quickAssignSelected(1)" class="py-2 px-1 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-display font-bold text-xs shadow flex flex-col items-center">
+                <span>02</span>
+                <span class="text-[10px]">Kepala</span>
+            </button>
+            <button onclick="quickAssignSelected(2)" class="py-2 px-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-display font-bold text-xs shadow flex flex-col items-center">
+                <span>03</span>
+                <span class="text-[10px]">Tubuh</span>
+            </button>
+            <button onclick="quickAssignSelected(3)" class="py-2 px-1 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-display font-bold text-xs shadow flex flex-col items-center">
+                <span>04</span>
+                <span class="text-[10px]">Ekor</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- =================================================================
+         CONTAINER UTAMA (3D STAGE)
+         ================================================================= -->
+    <main class="w-full max-w-6xl main-stage-3d rounded-[2rem] sm:rounded-[2.6rem] p-3.5 sm:p-7 relative z-10 transition-all duration-300">
+
+        <!-- =============================================================
+             TOP NAVIGATION & DEVICE ADAPTIVE BAR
+             ============================================================= -->
+        <header class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b-2 border-blue-100">
+            <!-- Brand & Identitas Materi SMP -->
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full sphere-blue flex items-center justify-center text-white font-display font-bold text-2xl shrink-0">
+                    <i class="ph-fill ph-newspaper-clipping"></i>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-sm">
+                            Bahasa Indonesia SMP • Teks Berita
+                        </span>
+                        <span class="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-blue-800 bg-blue-100/90 px-2.5 py-0.5 rounded-full border border-blue-200">
+                            <i class="ph-fill ph-devices text-blue-600"></i> HP • Laptop • Papan Interaktif
+                        </span>
+                    </div>
+                    <h1 class="font-display text-lg sm:text-2xl font-bold text-slate-900 leading-tight mt-0.5">
+                        Misi Redaksi: Menyusun Struktur Teks Berita
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Tombol Navigasi Layar & Alat Bantu Kelas -->
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                <!-- Switcher Materi vs Kuis -->
+                <div class="flex items-center bg-blue-100/80 p-1 rounded-2xl border-2 border-blue-200">
+                    <button id="tabMateri" onclick="switchScreen('materi')" class="px-3 sm:px-4 py-1.5 rounded-xl font-display font-bold text-xs sm:text-sm transition flex items-center gap-1.5 bg-blue-600 text-white shadow">
+                        <i class="ph-bold ph-cube"></i>
+                        <span>1. Materi 3D</span>
+                    </button>
+                    <button id="tabKuis" onclick="switchScreen('kuis')" class="px-3 sm:px-4 py-1.5 rounded-xl font-display font-bold text-xs sm:text-sm transition flex items-center gap-1.5 text-blue-900 hover:bg-white/60">
+                        <i class="ph-bold ph-puzzle-piece"></i>
+                        <span>2. Kuis Susun Berita</span>
+                    </button>
+                </div>
+
+                <!-- Kontrol Tampilan Papan Interaktif, Kunci Guru, Suara, Fullscreen -->
+                <div class="flex items-center gap-1.5">
+                    <!-- Toggle Mode Papan Interaktif (Teks Besar) -->
+                    <button id="btnSmartboard" onclick="toggleSmartboardMode()" class="btn-3d-white px-2.5 py-2 rounded-xl text-blue-900 font-bold text-xs flex items-center gap-1.5" title="Mode Papan Interaktif Digital / Proyektor Kelas">
+                        <i class="ph-bold ph-presentation-chart text-base text-blue-600"></i>
+                        <span class="hidden lg:inline" id="smartboardLabel">Mode Papan</span>
+                    </button>
+
+                    <!-- Tombol Kunci Guru -->
+                    <button onclick="openTeacherModal()" class="btn-3d-amber px-3 py-2 rounded-xl text-slate-950 font-display font-bold text-xs flex items-center gap-1" title="Buka Kunci Jawaban & Panduan Guru">
+                        <i class="ph-fill ph-key text-sm"></i>
+                        <span class="hidden md:inline">Kunci Guru</span>
+                    </button>
+
+                    <!-- Tombol Efek Suara -->
+                    <button id="btnSound" onclick="toggleSound()" class="btn-3d-white w-9 h-9 sm:w-10 sm:h-10 rounded-xl text-blue-700 flex items-center justify-center" title="Suara Efek Game">
+                        <i id="soundIcon" class="ph-fill ph-speaker-high text-lg text-blue-600"></i>
+                    </button>
+
+                    <!-- Tombol Layar Penuh -->
+                    <button onclick="toggleFullScreen()" class="btn-3d-white w-9 h-9 sm:w-10 sm:h-10 rounded-xl text-blue-700 flex items-center justify-center" title="Layar Penuh (Fullscreen)">
+                        <i id="fsIcon" class="ph-bold ph-corners-out text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- =============================================================
+             LAYAR 1: MATERI 3D STRUKTUR TEKS BERITA (PIRAMIDA TERBALIK)
+             ============================================================= -->
+        <section id="screenMateri" class="space-y-6">
+
+            <!-- Banner 3D Khas Slide Presentasi -->
+            <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-sky-500 rounded-[2rem] p-5 sm:p-7 text-white shadow-xl relative overflow-hidden border-2 border-blue-300">
+                <!-- Bola 3D Tanda Tanya Persis Slide -->
+                <div class="hidden sm:flex absolute right-6 top-1/2 -translate-y-1/2 w-24 h-24 rounded-full sphere-amber items-center justify-center animate-float">
+                    <span class="font-display font-bold text-6xl text-slate-900 select-none">?</span>
+                </div>
+
+                <div class="relative z-10 max-w-3xl space-y-2.5">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider border border-white/25">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-300 animate-ping"></span>
+                        <span>Konsep Dasar Jurnalistik SMP</span>
+                    </div>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold leading-tight">
+                        Mengapa Berita Disusun dengan <span class="text-amber-300 underline decoration-wavy decoration-amber-300/70">Piramida Terbalik?</span>
+                    </h2>
+                    <p class="text-blue-50 text-xs sm:text-base font-medium leading-relaxed">
+                        Dalam dunia jurnalistik, pembaca ingin tahu <strong>inti peristiwa secepat mungkin!</strong> Karena itu, informasi paling penting diletakkan di bagian paling atas, diikuti rincian penyebab, dan ditutup informasi tambahan. Ketuk setiap bagian 3D di bawah ini!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Grid Interaktif: Kiri Visual Piramida Terbalik 3D, Kanan 4 Kartu 3D Bola -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+                <!-- KOLOM KIRI (5 Kolom): Simulator Piramida Terbalik 3D -->
+                <div class="lg:col-span-5 bg-gradient-to-b from-blue-50 via-sky-50 to-blue-100/80 rounded-[2rem] p-5 border-2 border-blue-200 flex flex-col justify-between shadow-inner">
+                    <div class="text-center space-y-1">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-blue-800 bg-blue-200/80 px-3 py-1 rounded-full">
+                            <i class="ph-fill ph-cursor-click"></i> Diagram 3D Interaktif
+                        </span>
+                        <h3 class="font-display text-xl sm:text-2xl font-bold text-slate-900 pt-0.5">
+                            Piramida Terbalik Teks Berita
+                        </h3>
+                        <p class="text-xs text-slate-600 font-medium">
+                            Semakin ke atas = Informasi semakin krusial/penting
+                        </p>
+                    </div>
+
+                    <!-- Susunan Visual Piramida 3D -->
+                    <div class="my-4 space-y-2.5 flex flex-col items-center px-1 sm:px-3">
+
+                        <!-- 01. JUDUL BERITA (3D Pill Banner di Puncak) -->
+                        <button onclick="highlightMaterial(0)" id="pyrBtn0" class="pyramid-layer w-full py-3 px-4 rounded-2xl pill-3d-banner text-slate-950 font-display font-bold text-sm sm:text-base flex items-center justify-between cursor-pointer">
+                            <span class="flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full bg-slate-900 text-amber-300 text-xs flex items-center justify-center font-extrabold shadow">01</span>
+                                <span>JUDUL BERITA (Headline)</span>
+                            </span>
+                            <span class="text-[11px] font-extrabold bg-slate-900/15 px-2.5 py-0.5 rounded-full">Paling Atas</span>
+                        </button>
+
+                        <!-- Indikator Panah Prioritas -->
+                        <div class="w-full flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-blue-700 px-2 pt-1">
+                            <span>▼ Prioritas Utama (Wajib Ada)</span>
+                            <span>ADIK SIMBA Pokok ▼</span>
+                        </div>
+
+                        <!-- 02. KEPALA BERITA (Bagian Terlebar Piramida) -->
+                        <button onclick="highlightMaterial(1)" id="pyrBtn1" class="pyramid-layer active-pyr w-full py-4 px-6 pyr-clip-1 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-800 text-white font-display font-bold text-center shadow-xl border-t-2 border-blue-300 cursor-pointer flex flex-col items-center justify-center">
+                            <span class="text-[10px] uppercase tracking-widest text-amber-300 font-extrabold">Informasi Paling Penting</span>
+                            <span class="text-base sm:text-lg tracking-wide">02. KEPALA BERITA (Lead / Teras)</span>
+                            <span class="text-[11px] text-blue-100 font-sans font-semibold mt-0.5">Apa • Di mana • Kapan • Siapa</span>
+                        </button>
+
+                        <!-- 03. TUBUH BERITA (Bagian Tengah Piramida) -->
+                        <button onclick="highlightMaterial(2)" id="pyrBtn2" class="pyramid-layer w-full py-4 px-6 pyr-clip-2 bg-gradient-to-b from-cyan-400 via-cyan-600 to-blue-700 text-white font-display font-bold text-center shadow-lg border-t-2 border-cyan-200 cursor-pointer flex flex-col items-center justify-center">
+                            <span class="text-[10px] uppercase tracking-widest text-cyan-100 font-extrabold">Informasi Pendukung Penting</span>
+                            <span class="text-sm sm:text-base">03. TUBUH BERITA (Body / Isi)</span>
+                            <span class="text-[11px] text-cyan-100 font-sans font-semibold mt-0.5">Mengapa • Bagaimana • Narasumber</span>
+                        </button>
+
+                        <!-- 04. EKOR BERITA (Ujung Bawah Piramida) -->
+                        <button onclick="highlightMaterial(3)" id="pyrBtn3" class="pyramid-layer w-full py-3.5 px-4 pyr-clip-3 bg-gradient-to-b from-purple-500 via-purple-600 to-indigo-800 text-white font-display font-bold text-center shadow-lg border-t-2 border-purple-300 cursor-pointer flex flex-col items-center justify-center">
+                            <span class="text-xs sm:text-sm">04. EKOR BERITA</span>
+                            <span class="text-[10px] text-purple-200 font-sans font-semibold">Solusi / Tambahan</span>
+                        </button>
+                    </div>
+
+                    <!-- Panel Penjelasan Aktif 3D -->
+                    <div id="pyramidActiveDetail" class="bg-white rounded-2xl p-4 border-2 border-blue-300 shadow-md space-y-2 transition-all">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span id="detailBadge" class="px-3 py-0.5 rounded-full text-xs font-extrabold bg-blue-600 text-white shadow-sm">
+                                02 • Kepala Berita (Lead)
+                            </span>
+                            <span id="detailKeywords" class="text-xs font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">
+                                Apa, Di mana, Kapan, Siapa
+                            </span>
+                        </div>
+                        <p id="detailDesc" class="text-xs sm:text-sm text-slate-700 font-semibold leading-relaxed">
+                            Paragraf pertama yang memuat fakta paling utama dari peristiwa. Jika pembaca hanya membaca bagian ini, mereka sudah tahu inti kejadiannya.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN (7 Kolom): 4 Kartu 3D Struktur Berita + CTA Mulai Kuis -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        <!-- Kartu 01: Judul Berita -->
+                        <div onclick="highlightMaterial(0)" id="matCard0" class="material-card-3d p-4 sm:p-5 rounded-3xl cursor-pointer flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start gap-3.5">
+                                    <div class="w-12 h-12 rounded-full sphere-amber flex items-center justify-center text-slate-950 font-display font-bold text-lg shrink-0">
+                                        01
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                                            Pemicu Perhatian
+                                        </span>
+                                        <h4 class="font-display text-lg font-bold text-slate-900 mt-1">
+                                            Judul Berita
+                                        </h4>
+                                    </div>
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-600 font-semibold mt-3 leading-relaxed">
+                                    Cerminan inti berita dalam 1 baris kalimat yang padat, jelas, dan memikat pembaca agar penasaran membaca isi berita.
+                                </p>
+                            </div>
+                            <div class="mt-3.5 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs font-extrabold text-amber-700">
+                                <span><i class="ph-fill ph-sparkle"></i> Singkat & Tanpa Titik</span>
+                                <span class="underline">Lihat di Piramida →</span>
+                            </div>
+                        </div>
+
+                        <!-- Kartu 02: Kepala Berita -->
+                        <div onclick="highlightMaterial(1)" id="matCard1" class="material-card-3d active-mat p-4 sm:p-5 rounded-3xl cursor-pointer flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start gap-3.5">
+                                    <div class="w-12 h-12 rounded-full sphere-blue flex items-center justify-center text-white font-display font-bold text-lg shrink-0">
+                                        02
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-blue-800 bg-blue-200 px-2.5 py-0.5 rounded-full border border-blue-300">
+                                            Paragraf Pembuka
+                                        </span>
+                                        <h4 class="font-display text-lg font-bold text-slate-900 mt-1">
+                                            Kepala Berita (Teras)
+                                        </h4>
+                                    </div>
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-700 font-semibold mt-3 leading-relaxed">
+                                    Bagian terpenting yang merangkum unsur <strong>ADIK SIMBA</strong> utama (Apa, Di mana, Kapan, Siapa) dari peristiwa.
+                                </p>
+                            </div>
+                            <div class="mt-3.5 pt-2.5 border-t border-blue-200 flex items-center justify-between text-xs font-extrabold text-blue-700">
+                                <span><i class="ph-fill ph-star"></i> Memuat Fakta Utama</span>
+                                <span class="underline">Lihat di Piramida →</span>
+                            </div>
+                        </div>
+
+                        <!-- Kartu 03: Tubuh Berita -->
+                        <div onclick="highlightMaterial(2)" id="matCard2" class="material-card-3d p-4 sm:p-5 rounded-3xl cursor-pointer flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start gap-3.5">
+                                    <div class="w-12 h-12 rounded-full sphere-cyan flex items-center justify-center text-white font-display font-bold text-lg shrink-0">
+                                        03
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-cyan-900 bg-cyan-100 px-2.5 py-0.5 rounded-full border border-cyan-300">
+                                            Penjelasan Proses
+                                        </span>
+                                        <h4 class="font-display text-lg font-bold text-slate-900 mt-1">
+                                            Tubuh Berita (Isi)
+                                        </h4>
+                                    </div>
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-600 font-semibold mt-3 leading-relaxed">
+                                    Menguraikan unsur <strong>Mengapa (Why)</strong> dan <strong>Bagaimana (How)</strong> peristiwa terjadi, lengkap dengan pernyataan narasumber resmi.
+                                </p>
+                            </div>
+                            <div class="mt-3.5 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs font-extrabold text-cyan-700">
+                                <span><i class="ph-fill ph-quotes"></i> Penyebab & Kutipan Ahli</span>
+                                <span class="underline">Lihat di Piramida →</span>
+                            </div>
+                        </div>
+
+                        <!-- Kartu 04: Ekor Berita -->
+                        <div onclick="highlightMaterial(3)" id="matCard3" class="material-card-3d p-4 sm:p-5 rounded-3xl cursor-pointer flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start gap-3.5">
+                                    <div class="w-12 h-12 rounded-full sphere-purple flex items-center justify-center text-white font-display font-bold text-lg shrink-0">
+                                        04
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-purple-900 bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-300">
+                                            Bagian Penutup
+                                        </span>
+                                        <h4 class="font-display text-lg font-bold text-slate-900 mt-1">
+                                            Ekor Berita
+                                        </h4>
+                                    </div>
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-600 font-semibold mt-3 leading-relaxed">
+                                    Berisi informasi tambahan, langkah penanganan/solusi dari pemerintah, atau imbauan kepada masyarakat luas.
+                                </p>
+                            </div>
+                            <div class="mt-3.5 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs font-extrabold text-purple-700">
+                                <span><i class="ph-fill ph-shield-check"></i> Solusi & Tindak Lanjut</span>
+                                <span class="underline">Lihat di Piramida →</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Box Call-To-Action Menuju Kuis Interaktif -->
+                    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 rounded-[2rem] p-5 text-white border-2 border-blue-300 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-14 h-14 rounded-full sphere-green flex items-center justify-center text-white shrink-0 animate-float">
+                                <i class="ph-bold ph-game-controller text-3xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-300">
+                                    Siap Menjadi Editor Berita?
+                                </span>
+                                <h4 class="font-display font-bold text-lg sm:text-xl leading-snug">
+                                    Susun Naskah Berita "Kekeringan Sungai di Desa Sukamaju"!
+                                </h4>
+                                <p class="text-xs text-blue-100 font-medium mt-0.5">
+                                    Bisa dimainkan dengan <strong>Seret & Lepas (Drag)</strong>, <strong>Ketuk Layar</strong>, atau <strong>Tombol Angka Cepat 01–04</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <button onclick="switchScreen('kuis')" class="btn-3d-amber text-slate-950 font-display font-bold text-base sm:text-lg px-6 py-3.5 rounded-2xl flex items-center gap-2 shrink-0 cursor-pointer w-full sm:w-auto justify-center">
+                            <span>Mulai Kuis Sekarang</span>
+                            <i class="ph-bold ph-arrow-right text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- =============================================================
+             LAYAR 2: KUIS INTERAKTIF MENYUSUN STRUKTUR TEKS BERITA
+             ============================================================= -->
+        <section id="screenKuis" class="hidden space-y-5">
+
+            <!-- Header Misi & Tombol Bantuan Visual ADIK SIMBA -->
+            <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-cyan-600 rounded-[2rem] p-4 sm:p-5 text-white shadow-lg border-2 border-blue-300 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-full sphere-amber flex items-center justify-center text-slate-950 font-display font-bold text-2xl shrink-0 animate-float">
+                        ?
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-extrabold uppercase tracking-wider">
+                                Tantangan Redaksi SMP
+                            </span>
+                            <span class="text-xs text-blue-100 font-semibold">
+                                • Seret Kartu, Ketuk Kotak, atau Klik Tombol [01] [02] [03] [04]
+                            </span>
+                        </div>
+                        <h2 class="font-display text-lg sm:text-2xl font-bold mt-0.5">
+                            Susunlah potongan berita berikut sesuai struktur teks berita yang tepat!
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Alat Bantu: Highlight Kata Kunci & Acak Ulang -->
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                    <button id="btnHintClue" onclick="toggleKeywordClues()" class="px-3.5 py-2 rounded-xl bg-amber-300 hover:bg-amber-200 text-slate-950 font-display font-bold text-xs sm:text-sm shadow transition flex items-center gap-1.5 cursor-pointer" title="Sorot kata kunci unsur ADIK SIMBA">
+                        <i class="ph-fill ph-magnifying-glass-plus text-base"></i>
+                        <span id="clueBtnText">Bantuan Sorot ADIK SIMBA: OFF</span>
+                    </button>
+
+                    <button onclick="resetQuizBoard()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-blue-50 text-blue-900 font-display font-bold text-xs sm:text-sm shadow transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="ph-bold ph-arrows-counter-clockwise text-blue-600"></i>
+                        <span>Acak Ulang</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Papan Permainan: Kiri Bank Potongan Berita, Kanan Bagan Struktur 3D -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- KOLOM KIRI (5 Kolom): Bank Potongan Teks Berita (Acak) -->
+                <div class="lg:col-span-5 bg-gradient-to-b from-blue-50 to-sky-100/90 rounded-[2rem] p-4 sm:p-5 border-2 border-blue-200 shadow-inner space-y-3.5">
+                    <div class="flex items-center justify-between border-b-2 border-blue-200/80 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-full sphere-blue text-white flex items-center justify-center font-display font-bold text-base">
+                                <i class="ph-bold ph-stack"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display font-bold text-slate-900 text-base sm:text-lg leading-none">
+                                    Potongan Teks Berita
+                                </h3>
+                                <p class="text-[11px] text-slate-600 font-semibold mt-1">
+                                    Seret kartu, atau gunakan tombol cepat <strong>01–04</strong>
+                                </p>
+                            </div>
+                        </div>
+                        <span id="remainingBadge" class="px-3 py-1 rounded-full bg-blue-600 text-white font-display font-bold text-xs shadow">
+                            4 Tersisa
+                        </span>
+                    </div>
+
+                    <!-- Wadah Kartu Potongan Berita -->
+                    <div id="sourcePool"
+                         class="space-y-3.5 min-h-[260px] p-1 rounded-2xl transition"
+                         ondragover="handlePoolDragOver(event)"
+                         ondrop="handlePoolDrop(event)">
+                        <!-- Di-render secara dinamis oleh JS -->
+                    </div>
+
+                    <!-- Panduan Singkat Multi-Perangkat -->
+                    <div class="bg-white/90 rounded-2xl p-3.5 border border-blue-200 text-xs text-slate-600 space-y-1.5 shadow-sm">
+                        <div class="font-display font-bold text-blue-900 flex items-center gap-1.5">
+                            <i class="ph-fill ph-sparkle text-amber-500 text-base"></i>
+                            <span>Cara Bermain Sesuai Perangkatmu:</span>
+                        </div>
+                        <ul class="space-y-1 text-[11px] font-semibold text-slate-600">
+                            <li>📱 <strong>HP / Tablet:</strong> Tekan tombol angka <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">01</span> <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">02</span> <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">03</span> <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">04</span> langsung di kartu.</li>
+                            <li>💻 <strong>Laptop / PC:</strong> Seret (Drag & Drop) kartu ke kotak di sebelah kanan.</li>
+                            <li>🖥️ <strong>Papan Interaktif:</strong> Ketuk kartu lalu ketuk kotak struktur tujuan!</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN (7 Kolom): Lembar Struktur Teks Berita (4 Zona Drop 3D) -->
+                <div class="lg:col-span-7 bg-white rounded-[2rem] p-4 sm:p-6 border-2 border-blue-200 shadow-lg space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-100 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-full sphere-cyan text-white flex items-center justify-center font-display font-bold text-lg">
+                                <i class="ph-bold ph-list-numbers"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display font-bold text-slate-900 text-base sm:text-xl leading-none">
+                                    Lembar Susunan Struktur Berita
+                                </h3>
+                                <p class="text-xs text-slate-500 font-semibold mt-1">
+                                    Susun dari bagian paling atas (01) hingga penutup berita (04)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Progress Pill -->
+                        <div class="flex items-center gap-2 bg-blue-50 px-3.5 py-1.5 rounded-2xl border border-blue-200">
+                            <span class="text-xs font-extrabold text-blue-900">Terisi:</span>
+                            <span id="filledCountText" class="font-display font-bold text-sm text-blue-600">0 / 4</span>
+                        </div>
+                    </div>
+
+                    <!-- 4 Slot Target Struktur Berita -->
+                    <div id="targetSlotsContainer" class="space-y-3.5">
+                        <!-- Di-render secara dinamis oleh JS -->
+                    </div>
+
+                    <!-- Bar Tombol Periksa Jawaban -->
+                    <div class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t-2 border-slate-100">
+                        <div id="statusHelperText" class="text-xs sm:text-sm font-bold text-slate-600 flex items-center gap-2">
+                            <i class="ph-fill ph-info text-blue-600 text-lg"></i>
+                            <span>Tempatkan keempat potongan berita untuk memeriksa hasil.</span>
+                        </div>
+
+                        <button id="btnCheckAnswer" onclick="checkStructureAnswer()" class="btn-3d-blue text-white font-display font-bold text-base sm:text-lg px-7 py-3.5 rounded-2xl flex items-center gap-2.5 cursor-pointer w-full sm:w-auto justify-center">
+                            <i class="ph-bold ph-check-circle text-2xl"></i>
+                            <span>Periksa Susunan Berita</span>
+                        </button>
+                    </div>
+
+                    <!-- Kotak Feedback Evaluasi -->
+                    <div id="quizFeedbackBox" class="hidden rounded-3xl p-5 border-2 space-y-3 transition-all"></div>
+                </div>
+
+            </div>
+
+            <!-- =========================================================
+                 PRATINJAU KORAN BERITA UTUH (MUNCUL SAAT SKOR 100)
+                 ========================================================= -->
+            <div id="completeNewsPreview" class="hidden bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white rounded-[2.2rem] p-5 sm:p-8 shadow-2xl border-4 border-amber-300 space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/20 pb-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-14 h-14 rounded-full sphere-green flex items-center justify-center text-white text-3xl shrink-0 animate-float">
+                            <i class="ph-bold ph-trophy"></i>
+                        </div>
+                        <div>
+                            <span class="px-3 py-0.5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider">
+                                Edisi Cetak Redaksi • Skor Sempurna 100!
+                            </span>
+                            <h3 class="font-display text-2xl sm:text-3xl font-bold mt-1">
+                                Teks Berita Utuh: Siap Diterbitkan!
+                            </h3>
+                        </div>
+                    </div>
+
+                    <button onclick="resetQuizBoard()" class="btn-3d-amber text-slate-950 font-display font-bold text-sm px-5 py-3 rounded-2xl flex items-center gap-2 cursor-pointer">
+                        <i class="ph-bold ph-arrows-counter-clockwise text-lg"></i>
+                        <span>Mainkan Lagi</span>
+                    </button>
+                </div>
+
+                <!-- Tampilan Artikel Koran Lengkap dengan Label Struktur -->
+                <div class="bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-inner space-y-4 border-2 border-blue-200">
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-200 pb-2">
+                        <span><i class="ph-fill ph-newspaper text-blue-600"></i> KORAN PELAJAR NUSANTARA</span>
+                        <span>SELASA, 28 JULI 2026 • KABUPATEN BANDUNG</span>
+                    </div>
+
+                    <!-- 01. Judul -->
+                    <div class="p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[11px] uppercase tracking-wider mb-1">
+                            01 • Judul Berita (Headline)
+                        </span>
+                        <h4 class="font-display text-xl sm:text-3xl font-bold text-slate-900 leading-snug">
+                            Musim Kemarau Sebabkan Sungai Mengering di Desa Sukamaju
+                        </h4>
+                    </div>
+
+                    <!-- 02. Kepala Berita -->
+                    <div class="p-4 rounded-2xl bg-blue-50/90 border-l-8 border-blue-600 space-y-1">
+                        <div class="flex flex-wrap items-center justify-between gap-1">
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-blue-800">
+                                02 • Kepala Berita / Teras (Memuat unsur ADIK SIMBA)
+                            </span>
+                            <span class="text-[11px] font-bold text-blue-600 bg-white px-2 py-0.5 rounded border border-blue-200">
+                                Bagian Terpenting
+                            </span>
+                        </div>
+                        <p class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed">
+                            Musim kemarau yang berlangsung sejak awal Juli menyebabkan Sungai Cibening di Desa Sukamaju, Kabupaten Bandung, mengalami kekeringan pada Selasa (28 Juli 2026). Akibatnya, warga desa mulai kesulitan memperoleh air bersih untuk kebutuhan sehari-hari dan mengairi sawah.
+                        </p>
+                    </div>
+
+                    <!-- 03. Tubuh Berita -->
+                    <div class="p-4 rounded-2xl bg-cyan-50/90 border-l-8 border-cyan-500 space-y-1">
+                        <div class="flex flex-wrap items-center justify-between gap-1">
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-cyan-900">
+                                03 • Tubuh Berita / Isi (Menjelaskan Mengapa & Kutipan BPBD)
+                            </span>
+                            <span class="text-[11px] font-bold text-cyan-800 bg-white px-2 py-0.5 rounded border border-cyan-200">
+                                Penjelasan Penyebab
+                            </span>
+                        </div>
+                        <p class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed">
+                            Menurut Badan Penanggulangan Bencana Daerah (BPBD) setempat, kondisi tersebut terjadi karena curah hujan yang sangat rendah selama beberapa minggu terakhir.
+                        </p>
+                    </div>
+
+                    <!-- 04. Ekor Berita -->
+                    <div class="p-4 rounded-2xl bg-purple-50/90 border-l-8 border-purple-600 space-y-1">
+                        <div class="flex flex-wrap items-center justify-between gap-1">
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-900">
+                                04 • Ekor Berita / Penutup (Tindak Lanjut Bantuan & Imbauan)
+                            </span>
+                            <span class="text-[11px] font-bold text-purple-800 bg-white px-2 py-0.5 rounded border border-purple-200">
+                                Informasi Penutup
+                            </span>
+                        </div>
+                        <p class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed">
+                            Untuk mengatasi masalah tersebut, pemerintah daerah menyalurkan bantuan air bersih menggunakan mobil tangki serta mengimbau masyarakat agar menghemat penggunaan air.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- =================================================================
+         MODAL PANDUAN & KUNCI JAWABAN GURU
+         ================================================================= -->
+    <div id="modalTeacher" class="fixed inset-0 bg-slate-950/65 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] max-w-3xl w-full max-h-[88vh] flex flex-col shadow-2xl border-4 border-blue-300 overflow-hidden">
+            <div class="p-5 bg-gradient-to-r from-blue-800 via-blue-600 to-cyan-600 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-full sphere-amber flex items-center justify-center text-slate-950 font-bold">
+                        <i class="ph-bold ph-chalkboard-teacher text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold">Kunci Jawaban & Panduan Pembahasan Guru</h3>
+                        <p class="text-xs text-blue-100">Analisis Struktur Teks Berita & Unsur ADIK SIMBA</p>
+                    </div>
+                </div>
+                <button onclick="closeTeacherModal()" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-3.5 text-sm">
+                <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-200 space-y-1">
+                    <div class="font-display font-bold text-amber-950 flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-xs font-extrabold">01. JUDUL BERITA</span>
+                        <span>Ringkas, Padat, Mewakili Inti Berita</span>
+                    </div>
+                    <p class="font-bold text-slate-900">"Musim Kemarau Sebabkan Sungai Mengering di Desa Sukamaju"</p>
+                    <p class="text-xs text-slate-600 font-medium">Ciri Kunci: Berupa satu frasa/kalimat pendek tanpa tanda titik di akhir yang langsung merangkum topik utama berita.</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-blue-50 border-2 border-blue-200 space-y-1">
+                    <div class="font-display font-bold text-blue-950 flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-xs font-extrabold">02. KEPALA BERITA (TERAS/LEAD)</span>
+                        <span>Fakta Utama Pembuka Berita (ADIK SIMBA)</span>
+                    </div>
+                    <p class="font-bold text-slate-900">"Musim kemarau yang berlangsung sejak awal Juli menyebabkan Sungai Cibening di Desa Sukamaju, Kabupaten Bandung, mengalami kekeringan pada Selasa (28 Juli 2026). Akibatnya, warga desa mulai kesulitan memperoleh air bersih untuk kebutuhan sehari-hari dan mengairi sawah."</p>
+                    <p class="text-xs text-slate-600 font-medium">Ciri Kunci: Menjawab unsur pokok ADIK SIMBA yaitu <strong>Apa</strong> (Sungai Cibening mengering), <strong>Di mana</strong> (Desa Sukamaju, Kab. Bandung), <strong>Kapan</strong> (Selasa, 28 Juli 2026), dan <strong>Siapa</strong> (warga desa kesulitan air bersih).</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-cyan-50 border-2 border-cyan-200 space-y-1">
+                    <div class="font-display font-bold text-cyan-950 flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-cyan-600 text-white text-xs font-extrabold">03. TUBUH BERITA (ISI)</span>
+                        <span>Penjelasan Penyebab (Mengapa) & Kutipan Narasumber</span>
+                    </div>
+                    <p class="font-bold text-slate-900">"Menurut Badan Penanggulangan Bencana Daerah (BPBD) setempat, kondisi tersebut terjadi karena curah hujan yang sangat rendah selama beberapa minggu terakhir."</p>
+                    <p class="text-xs text-slate-600 font-medium">Ciri Kunci: Menjelaskan alasan/penyebab kekeringan (curah hujan rendah) yang diperkuat oleh pernyataan pihak berwenang (BPBD).</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-purple-50 border-2 border-purple-200 space-y-1">
+                    <div class="font-display font-bold text-purple-950 flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-purple-600 text-white text-xs font-extrabold">04. EKOR BERITA</span>
+                        <span>Penutup Berita: Solusi Penanganan & Imbauan</span>
+                    </div>
+                    <p class="font-bold text-slate-900">"Untuk mengatasi masalah tersebut, pemerintah daerah menyalurkan bantuan air bersih menggunakan mobil tangki serta mengimbau masyarakat agar menghemat penggunaan air."</p>
+                    <p class="text-xs text-slate-600 font-medium">Ciri Kunci: Berisi informasi tambahan berupa tindak lanjut penanganan (bantuan mobil tangki air) dan imbauan kepada warga.</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                <button onclick="autoFillCorrectAnswers()" class="btn-3d-blue px-4 py-2.5 rounded-xl text-white font-display font-bold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer">
+                    <i class="ph-bold ph-magic-wand"></i>
+                    <span>Tampilkan Susunan Benar di Layar Kuis (Demo Kelas)</span>
+                </button>
+                <button onclick="closeTeacherModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs sm:text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           DATA MATERI 3D & POTONGAN TEKS BERITA
+           ===================================================================== */
+        const materialDetails = [
+            {
+                badge: "01 • Judul Berita (Headline)",
+                badgeClass: "bg-amber-400 text-slate-950",
+                keywords: "Paling Atas • 1 Kalimat Ringkas",
+                desc: "Judul berita berfungsi sebagai etalase utama yang merangkum inti peristiwa secara singkat, padat, dan memancing rasa ingin tahu pembaca."
+            },
+            {
+                badge: "02 • Kepala Berita (Teras / Lead)",
+                badgeClass: "bg-blue-600 text-white",
+                keywords: "Apa • Di mana • Kapan • Siapa",
+                desc: "Paragraf pembuka yang memuat informasi paling pokok dari berita. Bagian ini wajib menjawab peristiwa apa yang terjadi, lokasi, waktu kejadian, dan warga yang terdampak."
+            },
+            {
+                badge: "03 • Tubuh Berita (Body / Isi)",
+                badgeClass: "bg-cyan-600 text-white",
+                keywords: "Mengapa • Bagaimana • Narasumber",
+                desc: "Bagian isi yang menjelaskan proses dan penyebab terjadinya peristiwa secara rinci, biasanya didukung penjelasan narasumber resmi seperti pihak berwenang."
+            },
+            {
+                badge: "04 • Ekor Berita (Penutup)",
+                badgeClass: "bg-purple-600 text-white",
+                keywords: "Solusi • Tindak Lanjut • Imbauan",
+                desc: "Bagian penutup berita yang berisi informasi tambahan, langkah penanganan masalah oleh pihak terkait, atau imbauan kepada masyarakat."
+            }
+        ];
+
+        const newsStructureSlots = [
+            {
+                slotIndex: 0,
+                shortLabel: "Judul",
+                title: "01. Judul Berita (Headline)",
+                subtitle: "Inti utama berita yang singkat, padat, dan mewakili isi berita",
+                sphereClass: "sphere-amber text-slate-950",
+                pillColor: "bg-amber-400 text-slate-950",
+                correctSnippetId: "snip_judul",
+                explanation: "Tepat sekali! 'Musim Kemarau Sebabkan Sungai Mengering di Desa Sukamaju' adalah Judul Berita karena ringkas, padat, dan mewakili topik utama berita."
+            },
+            {
+                slotIndex: 1,
+                shortLabel: "Kepala",
+                title: "02. Kepala Berita (Teras / Lead)",
+                subtitle: "Paragraf pembuka terpenting memuat unsur ADIK SIMBA",
+                sphereClass: "sphere-blue text-white",
+                pillColor: "bg-blue-600 text-white",
+                correctSnippetId: "snip_kepala",
+                explanation: "Benar! Ini adalah Kepala Berita karena memuat informasi pokok ADIK SIMBA: peristiwa kekeringan Sungai Cibening (Apa), di Desa Sukamaju Kab. Bandung (Di mana), Selasa 28 Juli 2026 (Kapan), dan dampaknya bagi warga (Siapa)."
+            },
+            {
+                slotIndex: 2,
+                shortLabel: "Tubuh",
+                title: "03. Tubuh Berita (Isi / Body)",
+                subtitle: "Penjelasan penyebab peristiwa (Mengapa) & keterangan narasumber resmi",
+                sphereClass: "sphere-cyan text-white",
+                pillColor: "bg-cyan-600 text-white",
+                correctSnippetId: "snip_tubuh",
+                explanation: "Tepat! Bagian ini adalah Tubuh Berita karena menguraikan alasan/penyebab kekeringan (curah hujan sangat rendah) berdasarkan penjelasan pihak berwenang (BPBD)."
+            },
+            {
+                slotIndex: 3,
+                shortLabel: "Ekor",
+                title: "04. Ekor Berita (Penutup)",
+                subtitle: "Informasi tambahan, solusi penanganan masalah, serta imbauan masyarakat",
+                sphereClass: "sphere-purple text-white",
+                pillColor: "bg-purple-600 text-white",
+                correctSnippetId: "snip_ekor",
+                explanation: "Sempurna! Bagian ini adalah Ekor Berita karena menutup berita dengan tindak lanjut/solusi pemerintah daerah (bantuan air bersih mobil tangki) dan imbauan hemat air."
+            }
+        ];
+
+        const rawSnippets = [
+            {
+                id: "snip_judul",
+                text: "Musim Kemarau Sebabkan Sungai Mengering di Desa Sukamaju",
+                highlightedText: "<span class='kw-pill bg-amber-200 text-amber-950'>Musim Kemarau Sebabkan Sungai Mengering</span> di Desa Sukamaju",
+                hintTag: "1 Baris Ringkas"
+            },
+            {
+                id: "snip_kepala",
+                text: "Musim kemarau yang berlangsung sejak awal Juli menyebabkan Sungai Cibening di Desa Sukamaju, Kabupaten Bandung, mengalami kekeringan pada Selasa (28 Juli 2026). Akibatnya, warga desa mulai kesulitan memperoleh air bersih untuk kebutuhan sehari-hari dan mengairi sawah.",
+                highlightedText: "Musim kemarau yang berlangsung sejak awal Juli menyebabkan <span class='kw-pill bg-blue-200 text-blue-950'>Sungai Cibening di Desa Sukamaju, Kabupaten Bandung</span>, mengalami kekeringan pada <span class='kw-pill bg-amber-200 text-amber-950'>Selasa (28 Juli 2026)</span>. Akibatnya, <span class='kw-pill bg-blue-200 text-blue-950'>warga desa mulai kesulitan memperoleh air bersih</span> untuk kebutuhan sehari-hari dan mengairi sawah.",
+                hintTag: "ADIK SIMBA Pokok"
+            },
+            {
+                id: "snip_tubuh",
+                text: "Menurut Badan Penanggulangan Bencana Daerah (BPBD) setempat, kondisi tersebut terjadi karena curah hujan yang sangat rendah selama beberapa minggu terakhir.",
+                highlightedText: "<span class='kw-pill bg-cyan-200 text-cyan-950'>Menurut Badan Penanggulangan Bencana Daerah (BPBD)</span> setempat, kondisi tersebut <span class='kw-pill bg-cyan-200 text-cyan-950'>terjadi karena curah hujan yang sangat rendah</span> selama beberapa minggu terakhir.",
+                hintTag: "Mengapa (Penyebab)"
+            },
+            {
+                id: "snip_ekor",
+                text: "Untuk mengatasi masalah tersebut, pemerintah daerah menyalurkan bantuan air bersih menggunakan mobil tangki serta mengimbau masyarakat agar menghemat penggunaan air.",
+                highlightedText: "<span class='kw-pill bg-purple-200 text-purple-950'>Untuk mengatasi masalah tersebut</span>, pemerintah daerah <span class='kw-pill bg-purple-200 text-purple-950'>menyalurkan bantuan air bersih</span> menggunakan mobil tangki serta <span class='kw-pill bg-purple-200 text-purple-950'>mengimbau masyarakat</span> agar menghemat penggunaan air.",
+                hintTag: "Solusi / Penutup"
+            }
+        ];
+
+        /* =====================================================================
+           STATE APLIKASI & WEB AUDIO SYNTHESIZER
+           ===================================================================== */
+        let poolOrder = [];
+        let slotAssignments = [null, null, null, null];
+        let selectedSnippetId = null;
+        let draggedSnippetId = null;
+        let soundEnabled = true;
+        let showKeywordClues = false;
+        let smartboardMode = false;
+        let lastValidationResults = null;
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx && AudioContextClass) {
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(560, now);
+                    osc.frequency.exponentialRampToValueAtTime(760, now + 0.06);
+                    gain.gain.setValueAtTime(0.11, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.06);
+                } else if (type === 'drop') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(660, now + 0.11);
+                    gain.gain.setValueAtTime(0.16, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.11);
+                } else if (type === 'correct') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.18, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.28);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.28);
+                    });
+                } else if (type === 'wrong') {
+                    const notes = [320, 240];
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+                        gain.gain.setValueAtTime(0.11, now + idx * 0.14);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.14 + 0.22);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.14);
+                        osc.stop(now + idx * 0.14 + 0.22);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        /* =====================================================================
+           INTERAKSI MATERI 3D & NAVIGASI ANTAR LAYAR
+           ===================================================================== */
+        function highlightMaterial(index) {
+            playSound('click');
+            const detail = materialDetails[index];
+
+            const badgeEl = document.getElementById('detailBadge');
+            const keywordsEl = document.getElementById('detailKeywords');
+            const descEl = document.getElementById('detailDesc');
+
+            badgeEl.className = `px-3 py-0.5 rounded-full text-xs font-extrabold shadow-sm ${detail.badgeClass}`;
+            badgeEl.textContent = detail.badge;
+            keywordsEl.textContent = detail.keywords;
+            descEl.textContent = detail.desc;
+
+            for (let i = 0; i < 4; i++) {
+                const card = document.getElementById(`matCard${i}`);
+                const pyrBtn = document.getElementById(`pyrBtn${i}`);
+                if (i === index) {
+                    card.classList.add('active-mat');
+                    pyrBtn.classList.add('active-pyr');
+                } else {
+                    card.classList.remove('active-mat');
+                    pyrBtn.classList.remove('active-pyr');
+                }
+            }
+        }
+
+        function switchScreen(screenName) {
+            playSound('click');
+            const screenMateri = document.getElementById('screenMateri');
+            const screenKuis = document.getElementById('screenKuis');
+            const tabMateri = document.getElementById('tabMateri');
+            const tabKuis = document.getElementById('tabKuis');
+
+            if (screenName === 'materi') {
+                screenMateri.classList.remove('hidden');
+                screenKuis.classList.add('hidden');
+                selectedSnippetId = null;
+                updateMobileQuickBar();
+                tabMateri.className = "px-3 sm:px-4 py-1.5 rounded-xl font-display font-bold text-xs sm:text-sm transition flex items-center gap-1.5 bg-blue-600 text-white shadow";
+                tabKuis.className = "px-3 sm:px-4 py-1.5 rounded-xl font-display font-bold text-xs sm:text-sm transition flex items-center gap-1.5 text-blue-900 hover:bg-white/60";
+            } else {
+                screenMateri.classList.add('hidden');
+                screenKuis.classList.remove('hidden');
+                tabKuis.className = "px-3 sm:px-4 py-1.5 rounded-xl font-display font-bold text-xs sm:text-sm transition flex items-center gap-1.5 bg-blue-600 text-white shadow";
+                tabMateri.className = "px-3 sm:px-4 py-1.5 rounded-xl font-display font-bold text-xs sm:text-sm transition flex items-center gap-1.5 text-blue-900 hover:bg-white/60";
+                renderBoard();
+            }
+        }
+
+        function toggleKeywordClues() {
+            playSound('click');
+            showKeywordClues = !showKeywordClues;
+            const btnText = document.getElementById('clueBtnText');
+            const btn = document.getElementById('btnHintClue');
+            if (showKeywordClues) {
+                btnText.textContent = "Bantuan Sorot ADIK SIMBA: ON";
+                btn.className = "px-3.5 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-display font-bold text-xs sm:text-sm shadow transition flex items-center gap-1.5 cursor-pointer ring-2 ring-white";
+            } else {
+                btnText.textContent = "Bantuan Sorot ADIK SIMBA: OFF";
+                btn.className = "px-3.5 py-2 rounded-xl bg-amber-300 hover:bg-amber-200 text-slate-950 font-display font-bold text-xs sm:text-sm shadow transition flex items-center gap-1.5 cursor-pointer";
+            }
+            renderBoard();
+        }
+
+        function toggleSmartboardMode() {
+            playSound('click');
+            smartboardMode = !smartboardMode;
+            document.body.classList.toggle('smartboard-mode', smartboardMode);
+            const label = document.getElementById('smartboardLabel');
+            if (label) {
+                label.textContent = smartboardMode ? "Mode Papan: ON" : "Mode Papan";
+            }
+        }
+
+        /* =====================================================================
+           LOGIKA KUIS MULTI-INPUT
+           ===================================================================== */
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            if (copy.every((item, idx) => item.id === newsStructureSlots[idx].correctSnippetId)) {
+                [copy[0], copy[1]] = [copy[1], copy[0]];
+            }
+            return copy;
+        }
+
+        function resetQuizBoard() {
+            playSound('click');
+            poolOrder = shuffleArray(rawSnippets).map(s => s.id);
+            slotAssignments = [null, null, null, null];
+            selectedSnippetId = null;
+            draggedSnippetId = null;
+            lastValidationResults = null;
+
+            document.getElementById('quizFeedbackBox').classList.add('hidden');
+            document.getElementById('completeNewsPreview').classList.add('hidden');
+            renderBoard();
+        }
+
+        function getSnippetById(id) {
+            return rawSnippets.find(s => s.id === id);
+        }
+
+        function renderBoard() {
+            renderSourcePool();
+            renderTargetSlots();
+            updateStatusCounters();
+            updateMobileQuickBar();
+        }
+
+        function updateMobileQuickBar() {
+            const bar = document.getElementById('mobileQuickAssignBar');
+            const preview = document.getElementById('mobileSelectedPreview');
+            if (selectedSnippetId) {
+                const snip = getSnippetById(selectedSnippetId);
+                preview.textContent = `"${snip.text}"`;
+                bar.classList.remove('hidden');
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        function clearSelectedSnippet() {
+            playSound('click');
+            selectedSnippetId = null;
+            renderBoard();
+        }
+
+        function quickAssignSelected(slotIdx) {
+            if (!selectedSnippetId) return;
+            placeSnippetInSlot(selectedSnippetId, slotIdx);
+        }
+
+        function renderSourcePool() {
+            const poolEl = document.getElementById('sourcePool');
+            poolEl.innerHTML = '';
+
+            const availableIds = poolOrder.filter(id => !slotAssignments.includes(id));
+
+            if (availableIds.length === 0) {
+                poolEl.innerHTML = `
+                    <div class="h-56 rounded-3xl border-2 border-dashed border-blue-300 bg-white/80 flex flex-col items-center justify-center text-center p-6 text-blue-900 shadow-inner">
+                        <div class="w-14 h-14 rounded-full sphere-green text-white flex items-center justify-center mb-3 animate-float">
+                            <i class="ph-bold ph-check text-3xl"></i>
+                        </div>
+                        <p class="font-display font-bold text-lg">Semua Potongan Berita Sudah Masuk ke Bagan!</p>
+                        <p class="text-xs text-slate-600 font-medium mt-1">Klik tombol <strong>"Periksa Susunan Berita"</strong> di bawah bagan kanan untuk melihat skormu.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            availableIds.forEach((snipId, idx) => {
+                const snip = getSnippetById(snipId);
+                const isSelected = (selectedSnippetId === snip.id);
+                const displayHTML = showKeywordClues ? snip.highlightedText : snip.text;
+
+                const card = document.createElement('div');
+                card.className = `news-snippet-card rounded-3xl p-4 select-none ${isSelected ? 'selected-card' : ''}`;
+                card.draggable = true;
+                card.dataset.snippetId = snip.id;
+
+                card.addEventListener('dragstart', (e) => {
+                    draggedSnippetId = snip.id;
+                    selectedSnippetId = snip.id;
+                    card.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', snip.id);
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    draggedSnippetId = null;
+                });
+
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.quick-slot-btn')) return;
+                    playSound('click');
+                    selectedSnippetId = (selectedSnippetId === snip.id) ? null : snip.id;
+                    renderBoard();
+                });
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-600 text-white font-display font-bold text-xs shadow-sm">
+                            <i class="ph-bold ph-dots-six-vertical"></i>
+                            Potongan #${idx + 1}
+                        </span>
+                        <span class="text-[11px] font-extrabold text-blue-800 bg-blue-100 px-2.5 py-0.5 rounded-full border border-blue-200">
+                            ${snip.hintTag}
+                        </span>
+                    </div>
+
+                    <p class="snippet-text text-slate-800 font-semibold text-xs sm:text-sm leading-relaxed">
+                        "${displayHTML}"
+                    </p>
+
+                    <div class="mt-3 pt-2.5 border-t border-blue-200/70 flex flex-wrap items-center justify-between gap-1.5">
+                        <span class="text-[11px] font-extrabold ${isSelected ? 'text-amber-900' : 'text-slate-500'}">
+                            ${isSelected ? '✨ Pilih kotak tujuan:' : 'Pasang cepat ke:'}
+                        </span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="placeSnippetInSlot('${snip.id}', 0)" class="quick-slot-btn px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-300 text-amber-950 font-display font-bold text-[11px] border border-amber-300 transition cursor-pointer" title="Pasang sebagai 01. Judul Berita">
+                                01 Judul
+                            </button>
+                            <button onclick="placeSnippetInSlot('${snip.id}', 1)" class="quick-slot-btn px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-300 text-blue-950 font-display font-bold text-[11px] border border-blue-300 transition cursor-pointer" title="Pasang sebagai 02. Kepala Berita">
+                                02 Kepala
+                            </button>
+                            <button onclick="placeSnippetInSlot('${snip.id}', 2)" class="quick-slot-btn px-2 py-1 rounded-lg bg-cyan-100 hover:bg-cyan-300 text-cyan-950 font-display font-bold text-[11px] border border-cyan-300 transition cursor-pointer" title="Pasang sebagai 03. Tubuh Berita">
+                                03 Tubuh
+                            </button>
+                            <button onclick="placeSnippetInSlot('${snip.id}', 3)" class="quick-slot-btn px-2 py-1 rounded-lg bg-purple-100 hover:bg-purple-300 text-purple-950 font-display font-bold text-[11px] border border-purple-300 transition cursor-pointer" title="Pasang sebagai 04. Ekor Berita">
+                                04 Ekor
+                            </button>
+                        </div>
+                    </div>
+                `;
+                poolEl.appendChild(card);
+            });
+        }
+
+        function renderTargetSlots() {
+            const container = document.getElementById('targetSlotsContainer');
+            container.innerHTML = '';
+
+            newsStructureSlots.forEach((slot, idx) => {
+                const assignedSnippetId = slotAssignments[idx];
+                const assignedSnippet = assignedSnippetId ? getSnippetById(assignedSnippetId) : null;
+                const validation = lastValidationResults ? lastValidationResults[idx] : null;
+
+                const slotEl = document.createElement('div');
+                let slotClasses = "drop-slot-3d rounded-3xl p-4";
+
+                if (assignedSnippet) {
+                    slotClasses += " filled-slot";
+                }
+                if (selectedSnippetId && !assignedSnippet) {
+                    slotClasses += " ready-to-place cursor-pointer";
+                }
+                if (validation === true) {
+                    slotClasses = "rounded-3xl p-4 bg-emerald-50/95 border-2 border-emerald-500 shadow-md";
+                } else if (validation === false) {
+                    slotClasses = "rounded-3xl p-4 bg-rose-50/95 border-2 border-rose-500 shadow-md";
+                }
+
+                slotEl.className = slotClasses;
+
+                slotEl.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slotEl.classList.add('drag-over');
+                });
+                slotEl.addEventListener('dragleave', () => {
+                    slotEl.classList.remove('drag-over');
+                });
+                slotEl.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slotEl.classList.remove('drag-over');
+                    const incomingId = e.dataTransfer.getData('text/plain') || draggedSnippetId;
+                    if (incomingId) {
+                        placeSnippetInSlot(incomingId, idx);
+                    }
+                });
+
+                slotEl.addEventListener('click', (e) => {
+                    if (e.target.closest('.slot-action-btn')) return;
+                    if (selectedSnippetId) {
+                        placeSnippetInSlot(selectedSnippetId, idx);
+                    }
+                });
+
+                let statusBadgeHTML = '';
+                if (validation === true) {
+                    statusBadgeHTML = `
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-600 text-white font-display font-bold text-xs shadow">
+                            <i class="ph-bold ph-check-fat"></i> Tepat! (+25 Poin)
+                        </span>
+                    `;
+                } else if (validation === false) {
+                    statusBadgeHTML = `
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-600 text-white font-display font-bold text-xs shadow">
+                            <i class="ph-bold ph-warning-circle"></i> Kurang Tepat
+                        </span>
+                    `;
+                }
+
+                let bodyHTML = '';
+                if (assignedSnippet) {
+                    const displayHTML = showKeywordClues ? assignedSnippet.highlightedText : assignedSnippet.text;
+                    bodyHTML = `
+                        <div class="mt-3 bg-white rounded-2xl p-3.5 border-2 border-blue-200 shadow-sm flex flex-col sm:flex-row items-start justify-between gap-3 cursor-grab"
+                             draggable="true"
+                             ondragstart="handleSlotCardDragStart(event, '${assignedSnippet.id}')">
+                            <div class="space-y-1.5 flex-1">
+                                <p class="snippet-text text-slate-800 font-semibold text-xs sm:text-sm leading-relaxed">
+                                    "${displayHTML}"
+                                </p>
+                                ${validation === true ? `
+                                    <div class="p-2.5 rounded-xl bg-emerald-100/80 border border-emerald-300 text-xs font-bold text-emerald-900 flex items-start gap-1.5">
+                                        <i class="ph-fill ph-seal-check text-emerald-600 text-base shrink-0 mt-0.5"></i>
+                                        <span>${slot.explanation}</span>
+                                    </div>
+                                ` : ''}
+                                ${validation === false ? `
+                                    <div class="p-2.5 rounded-xl bg-rose-100/80 border border-rose-300 text-xs font-bold text-rose-900 flex items-start gap-1.5">
+                                        <i class="ph-fill ph-info text-rose-600 text-base shrink-0 mt-0.5"></i>
+                                        <span>Potongan ini belum sesuai untuk <strong>${slot.title}</strong>. Ingat: ${slot.subtitle.toLowerCase()}.</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="flex sm:flex-col items-center gap-1 self-end sm:self-center shrink-0">
+                                ${idx > 0 ? `
+                                    <button onclick="swapSlots(${idx}, ${idx - 1})" class="slot-action-btn w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center border border-blue-200 transition" title="Tukar ke Atas">
+                                        <i class="ph-bold ph-caret-up"></i>
+                                    </button>
+                                ` : ''}
+                                ${idx < 3 ? `
+                                    <button onclick="swapSlots(${idx}, ${idx + 1})" class="slot-action-btn w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center border border-blue-200 transition" title="Tukar ke Bawah">
+                                        <i class="ph-bold ph-caret-down"></i>
+                                    </button>
+                                ` : ''}
+                                <button onclick="removeSnippetFromSlot(${idx})" class="slot-action-btn w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center border border-rose-200 transition" title="Lepaskan potongan berita ini">
+                                    <i class="ph-bold ph-arrow-u-up-left"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    bodyHTML = `
+                        <div class="mt-2.5 py-4 px-4 rounded-2xl bg-white/80 border-2 border-dashed ${selectedSnippetId ? 'border-amber-400 text-amber-900 bg-amber-50/70' : 'border-blue-200 text-blue-700'} text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition">
+                            <i class="ph-bold ${selectedSnippetId ? 'ph-hand-tap text-amber-600 text-lg animate-bounce' : 'ph-plus-circle text-base'}"></i>
+                            <span>${selectedSnippetId ? `Ketuk di sini untuk memasang ke ${slot.title}!` : `Seret potongan berita ke kotak ${slot.shortLabel} ini`}</span>
+                        </div>
+                    `;
+                }
+
+                slotEl.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full ${slot.sphereClass} font-display font-bold text-base flex items-center justify-center shrink-0">
+                                0${idx + 1}
+                            </div>
+                            <div>
+                                <h4 class="font-display font-bold text-slate-900 text-sm sm:text-base leading-tight">
+                                    ${slot.title}
+                                </h4>
+                                <p class="text-[11px] text-slate-600 font-semibold mt-0.5">
+                                    ${slot.subtitle}
+                                </p>
+                            </div>
+                        </div>
+                        ${statusBadgeHTML}
+                    </div>
+                    ${bodyHTML}
+                `;
+
+                container.appendChild(slotEl);
+            });
+        }
+
+        function handleSlotCardDragStart(e, snippetId) {
+            draggedSnippetId = snippetId;
+            selectedSnippetId = snippetId;
+            e.dataTransfer.setData('text/plain', snippetId);
+        }
+
+        function handlePoolDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handlePoolDrop(e) {
+            e.preventDefault();
+            const incomingId = e.dataTransfer.getData('text/plain') || draggedSnippetId;
+            if (!incomingId) return;
+            const existingSlotIdx = slotAssignments.indexOf(incomingId);
+            if (existingSlotIdx !== -1) {
+                removeSnippetFromSlot(existingSlotIdx);
+            }
+        }
+
+        function placeSnippetInSlot(snippetId, targetSlotIndex) {
+            playSound('drop');
+            lastValidationResults = null;
+            document.getElementById('quizFeedbackBox').classList.add('hidden');
+            document.getElementById('completeNewsPreview').classList.add('hidden');
+
+            const previousSlotIndex = slotAssignments.indexOf(snippetId);
+            const currentOccupant = slotAssignments[targetSlotIndex];
+
+            if (previousSlotIndex !== -1) {
+                slotAssignments[previousSlotIndex] = currentOccupant;
+            }
+
+            slotAssignments[targetSlotIndex] = snippetId;
+            selectedSnippetId = null;
+            draggedSnippetId = null;
+
+            renderBoard();
+        }
+
+        function swapSlots(idxA, idxB) {
+            playSound('drop');
+            lastValidationResults = null;
+            document.getElementById('quizFeedbackBox').classList.add('hidden');
+            document.getElementById('completeNewsPreview').classList.add('hidden');
+
+            const temp = slotAssignments[idxA];
+            slotAssignments[idxA] = slotAssignments[idxB];
+            slotAssignments[idxB] = temp;
+            renderBoard();
+        }
+
+        function removeSnippetFromSlot(slotIndex) {
+            playSound('click');
+            lastValidationResults = null;
+            slotAssignments[slotIndex] = null;
+            document.getElementById('quizFeedbackBox').classList.add('hidden');
+            document.getElementById('completeNewsPreview').classList.add('hidden');
+            renderBoard();
+        }
+
+        function updateStatusCounters() {
+            const filledCount = slotAssignments.filter(Boolean).length;
+            const remaining = rawSnippets.length - filledCount;
+
+            document.getElementById('remainingBadge').textContent = `${remaining} Tersisa`;
+            document.getElementById('filledCountText').textContent = `${filledCount} / 4`;
+
+            const helper = document.getElementById('statusHelperText');
+            if (filledCount < 4) {
+                helper.innerHTML = `
+                    <i class="ph-fill ph-info text-blue-600 text-lg"></i>
+                    <span>Masih ada <strong>${remaining} potongan berita</strong> yang belum dipasang.</span>
+                `;
+            } else {
+                helper.innerHTML = `
+                    <i class="ph-fill ph-sparkle text-emerald-600 text-lg"></i>
+                    <span class="text-emerald-800">Keempat struktur sudah terisi! Klik <strong>Periksa Susunan Berita</strong>.</span>
+                `;
+            }
+        }
+
+        /* =====================================================================
+           VALIDASI JAWABAN & UMPAN BALIK VISUAL
+           ===================================================================== */
+        function checkStructureAnswer() {
+            const filledCount = slotAssignments.filter(Boolean).length;
+            const feedbackBox = document.getElementById('quizFeedbackBox');
+
+            if (filledCount < 4) {
+                playSound('wrong');
+                feedbackBox.className = "rounded-3xl p-4 sm:p-5 border-2 bg-amber-50 border-amber-300 text-amber-950 flex items-center gap-3.5 shadow-md";
+                feedbackBox.innerHTML = `
+                    <div class="w-11 h-11 rounded-full sphere-amber flex items-center justify-center text-slate-950 shrink-0">
+                        <i class="ph-bold ph-warning text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-display font-bold text-base sm:text-lg">Masih Ada Kotak Struktur yang Kosong!</h4>
+                        <p class="text-xs sm:text-sm font-medium">Tempatkan keempat potongan berita terlebih dahulu sebelum memeriksa hasil susunanmu.</p>
+                    </div>
+                `;
+                feedbackBox.classList.remove('hidden');
+                return;
+            }
+
+            lastValidationResults = newsStructureSlots.map((slot, idx) => {
+                return slotAssignments[idx] === slot.correctSnippetId;
+            });
+
+            const correctCount = lastValidationResults.filter(Boolean).length;
+            const score = correctCount * 25;
+
+            renderTargetSlots();
+
+            if (correctCount === 4) {
+                playSound('correct');
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 100,
+                        spread: 80,
+                        origin: { y: 0.62 }
+                    });
+                }
+
+                feedbackBox.className = "rounded-3xl p-5 border-2 bg-emerald-50 border-emerald-400 text-emerald-950 space-y-2 shadow-lg";
+                feedbackBox.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full sphere-green text-white flex items-center justify-center shrink-0">
+                                <i class="ph-bold ph-medal text-2xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
+                                    MISI REDAKSI BERHASIL • SKOR 100
+                                </span>
+                                <h4 class="font-display text-xl sm:text-2xl font-bold text-emerald-950">
+                                    Hebat! Struktur Teks Berita Tersusun Sempurna (4/4 Benar)!
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs sm:text-sm text-emerald-900 font-semibold leading-relaxed">
+                        Kamu berhasil mengurutkan berita mulai dari <strong>Judul Berita</strong>, <strong>Kepala Berita (Teras)</strong>, <strong>Tubuh Berita (Isi)</strong>, hingga <strong>Ekor Berita</strong> sesuai prinsip Piramida Terbalik. Lihat tampilan koran utuhnya di bawah!
+                    </p>
+                `;
+                feedbackBox.classList.remove('hidden');
+
+                const previewEl = document.getElementById('completeNewsPreview');
+                previewEl.classList.remove('hidden');
+                setTimeout(() => {
+                    previewEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 180);
+
+            } else {
+                playSound('wrong');
+                feedbackBox.className = "rounded-3xl p-5 border-2 bg-rose-50 border-rose-300 text-rose-950 space-y-2 shadow-md";
+                feedbackBox.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full sphere-pink text-white flex items-center justify-center shrink-0">
+                                <i class="ph-bold ph-arrows-clockwise text-2xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-200 text-rose-900">
+                                    SKOR SAAT INI: ${score} (${correctCount}/4 TEPAT)
+                                </span>
+                                <h4 class="font-display text-lg sm:text-xl font-bold text-rose-950">
+                                    Hampir Tepat! Masih Ada Bagian Struktur yang Tertukar
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs sm:text-sm text-rose-900 font-semibold leading-relaxed">
+                        Gunakan tombol panah <i class="ph-bold ph-caret-up"></i> <i class="ph-bold ph-caret-down"></i> pada kotak bertanda merah untuk menukar posisinya, atau aktifkan <strong>"Bantuan Sorot ADIK SIMBA"</strong> di bagian atas!
+                    </p>
+                `;
+                feedbackBox.classList.remove('hidden');
+            }
+        }
+
+        /* =====================================================================
+           MODAL GURU, SUARA, & LAYAR PENUH
+           ===================================================================== */
+        function openTeacherModal() {
+            playSound('click');
+            const modal = document.getElementById('modalTeacher');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTeacherModal() {
+            playSound('click');
+            const modal = document.getElementById('modalTeacher');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function autoFillCorrectAnswers() {
+            closeTeacherModal();
+            switchScreen('kuis');
+            slotAssignments = newsStructureSlots.map(s => s.correctSnippetId);
+            selectedSnippetId = null;
+            checkStructureAnswer();
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            if (soundEnabled) {
+                icon.className = "ph-fill ph-speaker-high text-lg text-blue-600";
+                playSound('click');
+            } else {
+                icon.className = "ph-fill ph-speaker-slash text-lg text-slate-400";
+            }
+        }
+
+        function toggleFullScreen() {
+            playSound('click');
+            const fsIcon = document.getElementById('fsIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                fsIcon.className = "ph-bold ph-corners-in text-lg text-blue-600";
+            } else {
+                document.exitFullscreen().catch(() => {});
+                fsIcon.className = "ph-bold ph-corners-out text-lg";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resetQuizBoard();
+            highlightMaterial(1);
+        });
+    </script>
+</body>
+</html>
